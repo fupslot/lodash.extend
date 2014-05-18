@@ -1,0 +1,21 @@
+{
+  "name": "fupslot.lodash.extend",
+  "version": "0.0.1",
+  "authors": [
+    "Eugene Brodsky <fupslot@gmail.com>"
+  ],
+  "description": "Extends lodash library with helpful functions",
+  "main": "fupslot.lodash.extend.js",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "vendor",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "lodash": "~2.4.1"
+  }
+}

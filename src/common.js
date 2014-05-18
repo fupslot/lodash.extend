@@ -13,7 +13,7 @@ function construct(head, tail) {
     return cat([head], lodash.toArray(tail));
 }
 
-function select(table, keys) {
+function table(table, keys) {
     return lodash.map(table, function(obj) {
         return lodash.pick.apply(null, construct(obj, keys));
     });
@@ -41,7 +41,7 @@ lodash.mixin({
     'truthy': truthy,
     'cat': cat,
     'construct':construct,
-    'select':select,
+    'table':table,
     'rename':rename,
     'as':as
 });

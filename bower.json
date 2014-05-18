@@ -13,9 +13,10 @@
     "bower_components",
     "vendor",
     "test",
-    "tests"
+    "tests",
+    "src"
   ],
   "dependencies": {
-    "lodash": "~2.4.1"
+    "lodash": "2.3.0"
   }
 }

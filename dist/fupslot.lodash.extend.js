@@ -18,7 +18,7 @@ function table(table, keys) {
     return lodash.map(table, function(obj) {
         return lodash.pick.apply(null, construct(obj, keys));
     });
-};
+}
 
 function rename(obj, newNames) {
     return lodash.reduce(newNames, function(o, nu, old) {
@@ -29,13 +29,25 @@ function rename(obj, newNames) {
         else return o;
     },
     lodash.omit.apply(null, construct(obj, lodash.keys(newNames))));
-};
+}
 
 function as(table, newNames) {
     return _.map(table, function(obj) {
         return rename(obj, newNames);
     });
-};
+}
+
+function valuesOf(obj, keys) {
+    return _.map(_.pick.apply(null, construct(obj, keys)), function (o) {
+        return o;
+    });
+}
+
+function containAll(obj, keys) {
+    return _.every(keys, function(key){
+        return _.contains(obj, key);
+    });
+}
 
 lodash.mixin({
     'existy': existy,
@@ -44,7 +56,9 @@ lodash.mixin({
     'construct':construct,
     'table':table,
     'rename':rename,
-    'as':as
+    'as':as,
+    'valuesOf':valuesOf,
+    'containAll':containAll
 });
 
 })(_);

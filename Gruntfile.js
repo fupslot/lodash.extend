@@ -23,7 +23,7 @@ module.exports = function(grunt) {
       app: {
         options: {
           process: function(src, path) {
-            return '!(function(lodash){\r\n'+src+'\r\n})(_);';
+            return '!(function(lodash){ "use strict";\r\n'+src+'\r\n}).call(this);';
           }
         },
         src: ['src/**/*.*'],

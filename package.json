@@ -1,0 +1,28 @@
+{
+  "name": "lodash.extend",
+  "version": "1.0.2",
+  "description": "Extends lodash library. Adds function for controlling data",
+  "main": "Gruntfile.js",
+  "dependencies": {
+    "lodash": "~2.4.1"
+  },
+  "devDependencies": {
+    "grunt-contrib-connect": "~0.7.1",
+    "grunt": "~0.4.5",
+    "grunt-contrib-concat": "~0.4.0",
+    "grunt-contrib-watch": "~0.6.1",
+    "grunt-contrib-uglify": "~0.4.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/fupslot/lodash.extend.git"
+  },
+  "author": "Eugene Brodsky",
+  "license": "BSD",
+  "bugs": {
+    "url": "https://github.com/fupslot/lodash.extend/issues"
+  }
+}

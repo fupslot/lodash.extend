@@ -1,8 +1,8 @@
 {
-  "name": "lodash.extend",
+  "name": "fupslot.lodash.extend",
   "version": "1.0.2",
   "description": "Extends lodash library. Adds function for controlling data",
-  "main": "Gruntfile.js",
+  "main": "./dist/fupslot.lodash.extend.js",
   "dependencies": {
     "lodash": "~2.4.1"
   },

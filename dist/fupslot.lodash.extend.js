@@ -111,7 +111,9 @@ lodash.mixin({
     'concatBy': concatBy
 });
 
-if (module && exports) {
+if ( typeof module === "object" && typeof module.exports === "object" ) {
+    // For environments that do not inherently posses a window with a document
+    // (such as Node.js), expose a jQuery-making factory as module.exports
     module.exports = lodash;
 }
 }).call(this);

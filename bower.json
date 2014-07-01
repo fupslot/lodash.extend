@@ -16,8 +16,5 @@
     "tests",
     "src",
     "dist/index.html"
-  ],
-  "dependencies": {
-    "lodash": "2.4.1"
-  }
+  ]
 }

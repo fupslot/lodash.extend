@@ -2,6 +2,10 @@
 var root   = this,
     lodash = root._;
 
+if (typeof lodash !== 'object' && typeof require === 'function') {
+    lodash = require('lodash');
+}
+
 if (typeof lodash !== 'function') {
     throw Error('fupslot.lodash.extend required lodash');
 }
@@ -94,10 +98,6 @@ function concatBy (values, keys) {
         if (!keys) return value;
         return lodash.table(value, keys);
     }));
-}
-
-if (typeof lodash !== 'object' && typeof require === 'function') {
-    lodash = require('lodash');
 }
 
 lodash.mixin({

@@ -1,6 +1,6 @@
 {
   "name": "fupslot.lodash.extend",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Extends lodash library. Adds function for controlling data",
   "main": "./dist/fupslot.lodash.extend.js",
   "dependencies": {

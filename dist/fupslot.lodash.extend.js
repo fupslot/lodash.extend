@@ -12,7 +12,7 @@ if (typeof lodash !== 'function') {
 
 function existy(x) { return x != null };
 function truthy(x) { return (x !== false) && existy(x) };
-
+function ignored(x) { return x[0] == '-'}
 
 function cat() {
     var head = lodash.first(arguments);
@@ -24,31 +24,53 @@ function construct(head, tail) {
     return cat([head], lodash.toArray(tail));
 }
 
+function restOfString(string, start) {
+    return string.substr(start || 1, string.length);
+}
+
+/**
+ * Selectivelly creates an array composed of the own enumerable property names of an object.
+ *
+ * @returns {Array} Returns an array of property names.
+ * @example
+ *
+ * keyss({a:1,b:2,c:3},'!c')
+ * // => ['a','b']
+ */
+function keyss(obj) {
+    return lodash.difference(lodash.keys(obj), lodash.map(lodash.rest(arguments), restOfString));
+}
+
 /**
  * var users = [[{name:'Alice', number: 12}],[{name:'John',number:15}]]
- * _.table2(users,['name',{number:'age'}])
+ * _.table(users,['name',{number:'age'}])
  * result -> [{name:'Alice', age:12},{name:'John',age:15}];
  */
  /**
   * var users = [{name:'Alice', general: {number:12,city:'New York'}}]
-  * _.table2(users,['name',{'~general':{number:'age'}}])
+  * _.table(users,['name',{'~general':{number:'age'}}])
   * 
   */ 
 function table(table, keys) {
     if (lodash.isArray(keys)) {
-        var columns = lodash.filter(keys, lodash.isObject);
-        
-        if (columns.length > 0) {
-            var newNames = lodash.assign.apply({}, columns);
-            
-            keys = lodash.filter(keys, lodash.isString);
-            keys = cat(keys, lodash.values(newNames));
 
-            table = as(table, newNames);
+        if (lodash.some(keys, ignored)) {
+            var ignore = lodash.filter(keys, ignored);
+            return lodash.map(table, function(row) {
+                return lodash.pick.apply(null, construct(row, keyss.apply(null,construct(row, ignore))));
+            });
         }
-        return lodash.map(table, function(row) {
-            return lodash.pick.apply(null, construct(row, keys));
-        });
+        else {
+            var columns = lodash.filter(keys, lodash.isObject);
+            if (columns.length > 0) {
+                var newNames = lodash.assign.apply({}, columns);
+                keys = cat(lodash.filter(keys, lodash.isString), lodash.values(newNames));
+                table = as(table, newNames);
+            }
+            return lodash.map(table, function(row) {
+                return lodash.pick.apply(null, construct(row, keys));
+            });
+        }
     }
 
     if (lodash.isObject(keys)) {
@@ -56,6 +78,8 @@ function table(table, keys) {
             return extract(row, keys);
         });
     }
+
+    return [];
 }
 
 /**
@@ -97,13 +121,16 @@ function matchQuery (row, key, query, method) {
     return lodash[method](query, function (values, cond) {
         if (cond === '$in') return matchQueryIn(row, key, values);
         if (cond === '$eq') return matchQueryEq(row, key, values);
+        if (cond === '$noeq') return matchQueryNoeq(row, key, values);
         if (cond === '$gt') return  matchQueryGt(row, key, values);
         if (cond === '$gte') return matchQueryGt(row, key, values, true);
         if (cond === '$lt') return  matchQueryLt(row, key, values);
         if (cond === '$lte') return matchQueryLt(row, key, values, true);
         if (cond === '$has') return matchQueryHas(row, key, values);
         if (cond === '$between') return matchQueryBetween(row, key, values);
-        return true;
+        if (cond === '$regex') return matchQueryRegexp(row, key, values);
+        // 
+        return false;
     });
 }
 
@@ -119,11 +146,17 @@ function matchQueryIn (row, field, values) {
 }
 
 function matchQueryEq (row, field, value) {
+    if (lodash.isArray(row[field])) return row[field]['length'] === value;
     return lodash.isEqual(row[field], value);
 }
 
+function matchQueryNoeq (row, field, value) {
+    return !lodash.isEqual(row[field], value);
+}
+
 function matchQueryGt (row, field, value, equal) {
-    if (lodash.isNumber(row[field]) && lodash.isNumber(value)) {
+    if (lodash.isArray(row[field])) return gt(row[field]['length'], value, equal);
+    if (lodash.isNumber(row[field])) {
         return gt(row[field], value, equal);
     }
     
@@ -134,7 +167,8 @@ function matchQueryGt (row, field, value, equal) {
 }
 
 function matchQueryLt (row, field, value, equal) {
-    if (lodash.isNumber(row[field]) && lodash.isNumber(value)) {
+    if (lodash.isArray(row[field])) return lt(row[field]['length'], value, equal);
+    if (lodash.isNumber(row[field])) {
         return lt(row[field], value, equal);
     }
 
@@ -165,6 +199,14 @@ function matchQueryBetween (row, field, value) {
         return row[field].getTime() >= value[0] && row[field].getTime() <= value[1];
     }
     return false;
+}
+
+function matchQueryRegexp(row, field, value) {
+    try {
+        var regexp = value instanceof RegExp ? value : new RegExp(value);
+        return regexp.test(row[field]);
+    }
+    catch(ex) { return false; }
 }
 
 function rename(obj, newNames) {
@@ -237,6 +279,21 @@ function concatBy (values, keys) {
     }));
 }
 
+function insideOut (obj, fieldId) {
+    return lodash.assign({}, {'id':obj[fieldId]}, {data:lodash.toArray(lodash.omit(obj,fieldId))});
+}
+
+function toJsonFormat (data, keys, fieldId) {
+    fieldId = fieldId || 'id';
+
+    var values = data;
+    if (keys) values  = lodash.table(values, cat([fieldId], keys));
+
+    return lodash.map(values, function (row) {
+        return insideOut.call(null, row, fieldId);
+    });
+}
+
 lodash.mixin({
     'existy': existy,
     'truthy': truthy,
@@ -251,7 +308,9 @@ lodash.mixin({
     'containAll': containAll,
     'differenceBy': differenceBy,
     'findIndexBy': findIndexBy,
-    'concatBy': concatBy
+    'concatBy': concatBy,
+    'keyss':keyss,
+    'toJsonFormat': toJsonFormat
 });
 
 if ( typeof module === "object" && typeof module.exports === "object" ) {

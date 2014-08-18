@@ -15,7 +15,7 @@
     "test",
     "tests",
     "src",
-    "dist/index.html"
+    "dist/index.html",
     "dist/lodash.js"
   ]
 }

@@ -278,18 +278,21 @@ function concatBy (values, keys) {
     }));
 }
 
-function insideOut (obj, fieldId) {
-    return lodash.assign({}, {'id':obj[fieldId]}, {data:lodash.toArray(lodash.omit(obj,fieldId))});
+function insideOut (obj, fieldId, isIdIncluded) {
+    return lodash.assign({}, {'id':obj[fieldId]}, {'data': lodash.toArray((isIdIncluded === true ? obj : lodash.omit(obj, fieldId)))});
 }
 
 function toJsonFormat (data, keys, fieldId) {
-    fieldId = fieldId || 'id';
+    fieldId = lodash.isString(fieldId) ? fieldId : 'id';
+
+    var isIdIncluded = lodash.last(arguments);
+    isIdIncluded = lodash.isBoolean(isIdIncluded) ? isIdIncluded : false;
 
     var values = data;
-    if (keys) values  = lodash.table(values, cat([fieldId], keys));
+    if (keys) values = lodash.table(values, cat([fieldId], keys));
 
     return lodash.map(values, function (row) {
-        return insideOut.call(null, row, fieldId);
+        return insideOut.call(null, row, fieldId, isIdIncluded);
     });
 }
 

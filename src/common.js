@@ -105,13 +105,13 @@ function extract (obj, branch) {
 }
 /**
  * queryObject -> {'age':{$in:[1,2]}}
- * queryObject -> {'age':{$eq:[1,2]}}
+ * queryObject -> {'age':{$eq:[1,2]},'$or':true}
  */ 
-function query (collection, queryObject, or) {
-    var method = or === true ? 'some' : 'every';
+function query (collection, queryObject) {
+    var method = lodash.has(queryObject, '$or') ? 'some' : 'every';
     return lodash.filter(collection, function (row) {
-        return lodash[method](queryObject, function (obj, key) {
-            return matchQuery(row, key, obj, method);
+        return lodash[method](queryObject, function (value, key) {
+            return matchQuery(row, key, value, method);
         });
     });
 }
@@ -296,6 +296,51 @@ function toJsonFormat (data, keys, fieldId) {
     });
 }
 
+/**
+ * var data = [{'name':'John Doe','age':20, 'weight':90},{'name':'John Bon Jovi','age':37,'weight':80}];
+ * _.insert(data,{'address':'5th street'},{'age':{'$eq':20},'weight':{'$eq':80},'$or':true});
+ * result -> [{"name":"John Doe","age":20,"weight":90,"address":"5th street"},{"name":"John Bon Jovi","age":37,"weight":80,"address":"5th street"}]
+ */
+function insertFunc(collection, insertData, condition) {
+    var inserted = 0;
+    var extendRow = function(row, data) {
+        lodash.each(insertData, function(value, key) {
+            if (lodash.isFunction(value)) {
+                try {
+                    row[key] = value.call(null, row);
+                }
+                catch(e){}
+            }
+            else if (lodash.isObject(value)) {
+                row[key] = lodash.clone(value, true); // deep cloning object
+            }
+            else row[key] = value;
+        });
+        
+        inserted += 1;
+
+        return row;
+    };
+    
+    if (lodash.isObject(condition)) {
+        var method = lodash.has(condition, '$or') ? 'some' : 'every';
+        
+        lodash.map(collection, function (row) {
+            var match = lodash[method](condition, function (value, key) {
+                return matchQuery(row, key, value, method);
+            });
+            return match ? extendRow(row, insertData) : row;
+        });
+    }
+    else {
+        lodash.map(collection, function (row) {
+            return extendRow(row, insertData);
+        });
+    }
+
+    return inserted;
+}
+
 lodash.mixin({
     'existy': existy,
     'truthy': truthy,
@@ -312,7 +357,8 @@ lodash.mixin({
     'findIndexBy': findIndexBy,
     'concatBy': concatBy,
     'keyss':keyss,
-    'toJsonFormat': toJsonFormat
+    'toJsonFormat': toJsonFormat,
+    'insert': insertFunc
 });
 
 if ( typeof module === "object" && typeof module.exports === "object" ) {

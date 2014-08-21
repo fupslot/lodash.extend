@@ -303,7 +303,8 @@ function toJsonFormat (data, keys, fieldId) {
  * result -> [{"name":"John Doe","age":20,"weight":90,"address":"5th street"},{"name":"John Bon Jovi","age":37,"weight":80,"address":"5th street"}]
  */
 function insertFunc(collection, insertData, condition) {
-    var inserted = 0;
+    if (lodash.isEmpty(insertData)) return inserted;
+
     var extendRow = function(row, data) {
         lodash.each(insertData, function(value, key) {
             if (lodash.isFunction(value)) {
@@ -318,8 +319,6 @@ function insertFunc(collection, insertData, condition) {
             else row[key] = value;
         });
         
-        inserted += 1;
-
         return row;
     };
     
@@ -338,8 +337,39 @@ function insertFunc(collection, insertData, condition) {
             return extendRow(row, insertData);
         });
     }
+}
 
-    return inserted;
+function updateFunc(collection, insertData, condition) {
+    if (lodash.isEmpty(insertData)) return inserted;
+
+    var extendRow = function(row, data) {
+        lodash.each(insertData, function(value, key) {
+            if (typeof value !== typeof row[key]) return;
+
+            if (lodash.isObject(value)) {
+                row[key] = lodash.clone(value, true); // deep cloning object
+            }
+            else row[key] = value;
+        });
+
+        return row;
+    };
+
+    if (lodash.isObject(condition)) {
+        var method = lodash.has(condition, '$or') ? 'some' : 'every';
+        
+        lodash.map(collection, function (row) {
+            var match = lodash[method](condition, function (value, key) {
+                return matchQuery(row, key, value, method);
+            });
+            return match ? extendRow(row, insertData) : row;
+        });
+    }
+    else {
+        lodash.map(collection, function (row) {
+            return extendRow(row, insertData);
+        });
+    }
 }
 
 lodash.mixin({
@@ -359,7 +389,8 @@ lodash.mixin({
     'concatBy': concatBy,
     'keyss':keyss,
     'toJsonFormat': toJsonFormat,
-    'insert': insertFunc
+    'insert': insertFunc,
+    'update': updateFunc
 });
 
 if ( typeof module === "object" && typeof module.exports === "object" ) {

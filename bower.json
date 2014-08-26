@@ -4,7 +4,7 @@
   "authors": [
     "Eugene Brodsky <fupslot@gmail.com>"
   ],
-  "description": "Extends lodash library with helpful functions",
+  "description": "Provides variety of functions for modifying javascript collections",
   "main": "fupslot.lodash.extend.js",
   "license": "MIT",
   "ignore": [
